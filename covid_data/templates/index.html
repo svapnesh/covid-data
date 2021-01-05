@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <title>Welcome</title>
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    </head>
+    <body>
+        <div class="jumbotron text-center">
+            <h1>Welcome to my website</h1>
+            <h3><a href="signup">Register</a></h3>
+            <h3><a href="login">Login</a></h3>
+        </div>
+    </body>
+    <script>
+        token = localStorage.getItem('token');
+        if (token)
+        {
+            window.location.href = '/dashboard/';
+        }
+    </script>
+</html>

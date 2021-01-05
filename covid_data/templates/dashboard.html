@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <title>
+        Dashboard
+    </title>
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="{% static 'angularjs/angular.min.js' %}"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard</h1>
+
+        {% verbatim %}
+        <div ng-app="dashboardApp" ng-controller="dashboardCtrl">
+            <label>{{ first_name }}</label> <a id="logout" class="btn btn-link">Logout</a><br><br>
+
+            <label style="color: blue;">Country: {{ country_name | uppercase }}</label><br><br>
+
+            <a id="send_email" class="btn btn-link">Send report email</a><br><br>
+
+            <label><b>Today's details:</b></label><br>
+            <label>Deaths: {{ today_deaths }}</label>&nbsp;<label>Confirmed: {{ today_confirmed }}</label>
+            <br><br>
+
+            <table class="table table-bordered">
+                <tr>
+                    <th>Confirmed</th>
+                    <th>Critical</th>
+                    <th>Deaths</th>
+                    <th>Recovered</th>
+                </tr>
+                <tr>
+                    <td>{{ latest_data.confirmed }}</td>
+                    <td>{{ latest_data.critical }}</td>
+                    <td>{{ latest_data.deaths }}</td>
+                    <td>{{ latest_data.recovered }}</td>
+                </tr>
+            </table>
+            <div id="chartDiv" ></div>
+        </div>
+    </div>
+
+    <script>
+        token = localStorage.getItem('token');
+        var app = angular.module('dashboardApp', []);
+
+        var chartDiv = document.getElementById('chartDiv');
+
+
+        if (token)
+        {
+            app.controller('dashboardCtrl', function($scope, $http) {
+                $http({
+                    method: 'GET',
+                    url: '/api/usermgmt/dashboard/',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': "Token " + token
+                    }
+                }).then(function(response){
+                    $scope.first_name = 'Hi, ' + response['data']['response']['first_name'];
+                    $http.get('https://corona-api.com/countries/' + response['data']['response']['country_code'])
+                    .then(function (response) {
+                       $scope.latest_data = response.data.data.latest_data;
+                       $scope.country_name = response.data.data.name;
+                       $scope.today_deaths = response.data.data.today.deaths;
+                       $scope.today_confirmed = response.data.data.today.confirmed;
+
+                       var x = [], confirmed_cased = [], death_cases = [];
+
+                       angular.forEach(response.data.data.timeline, function (value, key){
+                        if (key < 5){
+                            x.push(value['date']);
+                            confirmed_cased.push(value['confirmed']);
+                            death_cases.push(value['deaths']);
+                         }
+                       });
+
+                       var confirmed = {
+                          x: x,
+                          y: confirmed_cased,
+                          name: 'confirmed',
+                          type: 'bar'
+                        };
+
+                        var deaths = {
+                            x: x,
+                            y: death_cases,
+                            name: 'deaths',
+                            type: 'bar'
+                        }
+
+                        var data = [confirmed, deaths];
+
+                        var layout = {barmode: 'group'};
+
+                        Plotly.newPlot(chartDiv, data, layout);
+                    });
+                }, function(error){
+                    alert("Something went wrong");
+                });
+            });
+        }
+        else{
+            window.location.href = '/';
+        }
+
+        $("#logout").click(function() {
+            $.ajax({
+                method: 'POST',
+                url: '/api/usermgmt/logout/',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': "Token " + token
+                },
+                success: function(data){
+                    if (data['code'] == 1){
+                        localStorage.removeItem("token");
+                        window.location.href = '/';
+                    }
+                }
+            });
+        });
+
+        $("#send_email").click(function() {
+            $.ajax({
+                method: 'POST',
+                url: '/api/usermgmt/send_report_email/',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': "Token " + token
+                },
+                success: function(data){
+                    console.log(data);
+                }
+            });
+        });
+    </script>
+    {% endverbatim %}
+</body>
+</html>

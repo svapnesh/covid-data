@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <title>
+            Login
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center">Login</h1>
+
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <form method="post" id="loginForm" class="form-horizontal">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label class="control-label">Email:</label>
+                            <input type="email" placeholder="svapnesh@gmail.com" name="email" class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Password:</label>
+                            <input type="password" placeholder="****" name="password" class="form-control"/>
+                        </div>
+
+                        <br>
+                        <button type="submit" class="btn btn-success">Login</button>
+                        <button type="reset" class="btn">Clear</button>
+                    </form>
+
+                    <a href="/">Back to Home</a>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </div>
+        <script>
+            token = localStorage.getItem('token');
+            if (token)
+            {
+                window.location.href = '/dashboard/';
+            }
+
+            $("#loginForm").submit(function(e){
+                var csrf_token = $('[name="csrfmiddlewaretoken"]').attr('value');
+                e.preventDefault();
+                var form = $(this);
+                var url = '/api/usermgmt/login/';
+                $.ajax({
+                    method: 'POST',
+                    url: url,
+                    headers:{"X-CSRFToken": csrf_token},
+                    data: form.serialize(),
+                    success: function(data){
+                        if (data['code'] == 1){
+                            localStorage.setItem("token", data['response']['token'])
+                            window.location.href = '/dashboard';
+                        }
+                        else{
+                            alert(data['message']);
+                        }
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

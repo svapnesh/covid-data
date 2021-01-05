@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <title>
+            SignUp
+        </title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center">Signup</h1>
+
+            <div class="row">
+                <div class="col-md-4"></div>
+                <div class="col-md-4">
+                    <form id="registerForm" method="post" class="form-horizontal">
+                        {% csrf_token %}
+
+                        <div class="form-group">
+                            <label class="control-label">First Name:</label>
+                            <input type="text" placeholder="Svapnesh" name="first_name" required class="form-control"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Last Name:</label>
+                            <input type="text" placeholder="Patel" name="last_name" required class="form-control"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Email:</label>
+                            <input type="email" placeholder="svapnesh@gmail.com" name="email" required class="form-control"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Password:</label>
+                            <input type="password" placeholder="****" name="password" minlength="8" required class="form-control"/>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Country:</label>
+                            <select name="country" class="form-control">
+                                <option value="india">India</option>
+                                <option value="usa">Usa</option>
+                            </select>
+                        </div>
+                        <br>
+                        <button type="submit" class="btn btn-success">Signup</button>
+                        <button type="reset" class="btn">Clear</button>
+
+                    </form>
+                    <a href="/">Back to Home</a>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+
+        </div>
+
+        <script>
+            token = localStorage.getItem('token');
+            if (token)
+            {
+                window.location.href = '/dashboard/';
+            }
+
+            $("#registerForm").submit(function(e){
+                var csrf_token = $('[name="csrfmiddlewaretoken"]').attr('value');
+                e.preventDefault();
+                var form = $(this);
+                var url = '/api/usermgmt/signup/';
+                $.ajax({
+                    method: 'POST',
+                    url: url,
+                    headers:{"X-CSRFToken": csrf_token},
+                    data: form.serialize(),
+                    success: function(data){
+                        if (data['code'] == 1){
+                            window.location.href = '/login';
+                        }
+                        else{
+                            alert(data['message']);
+                        }
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
