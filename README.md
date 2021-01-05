@@ -17,3 +17,16 @@ requests==2.25.1
 
 orca==1.5.4
 
+# Frontend libraries
+AngularJS v1.8.2
+
+Bootstrap v5.0.0
+
+jquery 3.5.1
+
+plotly-latest.min.js(https://cdn.plot.ly/plotly-latest.min.js)
+
+
+
+
+
